@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f7f7f7; }
+        h1 { text-align: center; }
+        table { margin: auto; width: 80%; border-collapse: collapse; background: #fff; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #0078D7; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Weather Data</h1>
+    <button id="refresh">Load Weather Data</button>
+    <table>
+        <thead>
+            <tr>
+                <th>City</th>
+                <th>Temperature</th>
+                <th>Humidity</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody id="weatherData">
+        </tbody>
+    </table>
+
+    <script>
+        // Insérez votre URL SAS générée ici
+        const blobUrl = "https://weatherstoragecloud.blob.core.windows.net/weather-data?sp=r&st=2024-12-06T16:20:40Z&se=2025-01-20T00:20:40Z&spr=https&sv=2022-11-02&sr=c&sig=k1vgefE3BvLklHu71%2BM0r5mbI4y%2BrwEw81mZcnZ%2FlnI%3D";
+
+        document.getElementById('refresh').addEventListener('click', async () => {
+            try {
+                // Récupérer les données du blob via l'URL SAS
+                const response = await fetch(blobUrl);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Créer une ligne de tableau avec les données récupérées
+                const weatherRow = `
+                    <tr>
+                        <td>${data.name}</td>
+                        <td>${(data.main.temp - 273.15).toFixed(2)} °C</td>
+                        <td>${data.main.humidity} %</td>
+                        <td>${data.weather[0].description}</td>
+                    </tr>
+                `;
+                document.getElementById('weatherData').innerHTML = weatherRow;
+            } catch (error) {
+                console.error("Error loading weather data:", error);
+                alert("Failed to load weather data. Please check your SAS URL and permissions.");
+            }
+        });
+    </script>
+</body>
+</html>
